@@ -425,20 +425,66 @@ def find_ffmpeg_dir():
 
 def download_file_with_progress(url, dest_path, progress_callback=None):
     import urllib.request
+    import ssl
+
+    # Bypass Python SSL certificate verification failures on Windows systems
+    try:
+        ctx = ssl._create_unverified_context()
+    except Exception:
+        ctx = ssl.create_default_context()
+        ctx.check_hostname = False
+        ctx.verify_mode = ssl.CERT_NONE
+
     req = urllib.request.Request(url, headers={"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64)"})
-    with urllib.request.urlopen(req, timeout=45) as resp:
-        total = int(resp.headers.get("content-length", 0))
-        downloaded = 0
-        chunk_size = 64 * 1024
-        with open(dest_path, "wb") as f:
-            while True:
-                chunk = resp.read(chunk_size)
-                if not chunk:
-                    break
-                f.write(chunk)
-                downloaded += len(chunk)
-                if progress_callback and total > 0:
-                    progress_callback(downloaded, total)
+    try:
+        with urllib.request.urlopen(req, timeout=45, context=ctx) as resp:
+            total = int(resp.headers.get("content-length", 0))
+            downloaded = 0
+            chunk_size = 64 * 1024
+            with open(dest_path, "wb") as f:
+                while True:
+                    chunk = resp.read(chunk_size)
+                    if not chunk:
+                        break
+                    f.write(chunk)
+                    downloaded += len(chunk)
+                    if progress_callback and total > 0:
+                        progress_callback(downloaded, total)
+        if os.path.isfile(dest_path) and os.path.getsize(dest_path) > 0:
+            return
+    except Exception as urllib_err:
+        # Fallback 1: curl.exe (uses native Windows Schannel certificate store)
+        if shutil.which("curl"):
+            try:
+                cmd = ["curl.exe", "-k", "-L", "-A", "Mozilla/5.0", "-o", dest_path, url]
+                res = subprocess.run(
+                    cmd,
+                    creationflags=subprocess.CREATE_NO_WINDOW if sys.platform == "win32" else 0,
+                    timeout=120,
+                )
+                if res.returncode == 0 and os.path.isfile(dest_path) and os.path.getsize(dest_path) > 0:
+                    return
+            except Exception:
+                pass
+
+        # Fallback 2: PowerShell with TLS 1.2/1.3 and certificate bypass
+        try:
+            ps_script = (
+                "[Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12 -bor [Net.SecurityProtocolType]::Tls13; "
+                "[System.Net.ServicePointManager]::ServerCertificateValidationCallback = {$true}; "
+                f"(New-Object System.Net.WebClient).DownloadFile('{url}', '{dest_path}')"
+            )
+            res = subprocess.run(
+                ["powershell", "-NoProfile", "-NonInteractive", "-Command", ps_script],
+                creationflags=subprocess.CREATE_NO_WINDOW if sys.platform == "win32" else 0,
+                timeout=120,
+            )
+            if res.returncode == 0 and os.path.isfile(dest_path) and os.path.getsize(dest_path) > 0:
+                return
+        except Exception:
+            pass
+
+        raise urllib_err
 
 
 class MediaRipperApp(ctk.CTk):
