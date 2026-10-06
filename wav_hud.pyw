@@ -36,7 +36,7 @@ BASE_DIR = APP_DIR
 LOGO_PNG = os.path.join(BUNDLE_DIR, "logo_rounded.png")
 LOGO_ICO = os.path.join(BUNDLE_DIR, "logo.ico")
 HISTORY_FILE = os.path.join(APP_DIR, "history.json")
-CURRENT_VERSION = "v2.4.7"
+CURRENT_VERSION = "v2.4.8"
 GITHUB_REPO = "Xspexdo/Wav-Ripper-"
 
 # Safe stream redirection for windowless pythonw execution
@@ -277,6 +277,7 @@ TRANSLATIONS = {
         "status_engine_checking": "INITIALIZING // VERIFYING CORE ENGINES...",
         "status_engine_dl_ytdlp": "INITIALIZING // AUTO-DOWNLOADING YT-DLP ENGINE...",
         "status_engine_dl_ffmpeg": "INITIALIZING // AUTO-DOWNLOADING FFMPEG CODECS...",
+        "status_engine_dl_vcredist": "INITIALIZING // DOWNLOADING VISUAL C++ RUNTIME...",
         "status_engine_ready": "ENGINES READY // STARTING EXTRACTION...",
         "btn_engine_setup": "[ CONFIGURING ENGINES... PLEASE WAIT ]",
         "btn_update": "UPDATE",
@@ -332,6 +333,7 @@ TRANSLATIONS = {
         "status_engine_checking": "กำลังตรวจสอบ // กำลังตรวจสอบระบบดาวน์โหลด...",
         "status_engine_dl_ytdlp": "กำลังติดตั้ง // ดาวน์โหลด ENGINE YT-DLP อัตโนมัติ...",
         "status_engine_dl_ffmpeg": "กำลังติดตั้ง // ดาวน์โหลด FFMPEG CODECS อัตโนมัติ...",
+        "status_engine_dl_vcredist": "กำลังติดตั้ง // ดาวน์โหลด VISUAL C++ RUNTIME อัตโนมัติ...",
         "status_engine_ready": "ระบบพร้อมใช้งาน // เริ่มการดึงสตรีม...",
         "btn_engine_setup": "[ กำลังติดตั้งระบบดาวน์โหลด... กรุณารอสักครู่ ]",
         "btn_update": "อัปเดต",
@@ -443,6 +445,32 @@ def find_ffmpeg_dir():
                 return match
 
     return None
+
+
+def check_vc_redist():
+    """Verify Microsoft Visual C++ 2015-2022 Redistributable (x64) is installed."""
+    if sys.platform != "win32":
+        return True
+    try:
+        import winreg
+        for subkey in [
+            r"SOFTWARE\Microsoft\VisualStudio\14.0\VC\Runtimes\x64",
+            r"SOFTWARE\WOW6432Node\Microsoft\VisualStudio\14.0\VC\Runtimes\x64",
+        ]:
+            try:
+                with winreg.OpenKey(winreg.HKEY_LOCAL_MACHINE, subkey) as key:
+                    val, _ = winreg.QueryValueEx(key, "Installed")
+                    if val == 1:
+                        return True
+            except Exception:
+                pass
+    except Exception:
+        pass
+
+    sys32 = os.path.join(os.environ.get("SystemRoot", r"C:\Windows"), "System32")
+    if os.path.isfile(os.path.join(sys32, "vcruntime140.dll")) and os.path.isfile(os.path.join(sys32, "msvcp140.dll")):
+        return True
+    return False
 
 
 def download_file_with_progress(url, dest_path, progress_callback=None):
@@ -1726,11 +1754,12 @@ class MediaRipperApp(ctk.CTk):
             self.status_display.configure(text_color=ACCENT_RED)
             return
 
-        # Ensure engines are ready
+        # Ensure engines and system runtimes are ready
         self.yt_dlp_bin = find_yt_dlp()
         self.ffmpeg_dir = find_ffmpeg_dir()
+        vc_ready = check_vc_redist() if sys.platform == "win32" else True
 
-        if not self.yt_dlp_bin or not self.ffmpeg_dir:
+        if not self.yt_dlp_bin or not self.ffmpeg_dir or not vc_ready:
             self._setup_missing_engines_and_run(url)
             return
 
@@ -1807,6 +1836,34 @@ class MediaRipperApp(ctk.CTk):
                     pass
 
                 self.ffmpeg_dir = engine_dir
+
+            # 3. Setup Microsoft Visual C++ Redistributable if missing
+            if sys.platform == "win32" and not check_vc_redist():
+                self.after(0, self.status_var.set, self.t("status_engine_dl_vcredist"))
+                dest_vcredist = os.path.join(engine_dir, "vc_redist.x64.exe")
+
+                def _vc_prog(dl, total):
+                    pct = dl / total
+                    dl_mb = dl / (1024 * 1024)
+                    tot_mb = total / (1024 * 1024)
+                    self.after(0, self._update_engine_progress, pct, dl_mb, tot_mb)
+
+                download_file_with_progress(
+                    "https://aka.ms/vs/17/release/vc_redist.x64.exe",
+                    dest_vcredist,
+                    _vc_prog,
+                )
+                try:
+                    subprocess.run(
+                        [dest_vcredist, "/install", "/passive", "/norestart"],
+                        timeout=120,
+                    )
+                except Exception:
+                    pass
+                try:
+                    os.remove(dest_vcredist)
+                except Exception:
+                    pass
 
             # Engines ready: schedule download on main thread immediately
             self.after(0, self._on_engines_ready, target_url)
