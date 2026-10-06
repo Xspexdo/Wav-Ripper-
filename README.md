@@ -162,6 +162,8 @@ A high-performance, lossless media ripper and stream extraction tool designed wi
 
 ```
 Wav-Ripper-/
+├── assets/
+│   └── donate_qr.png    # ภาพ QR Code สนับสนุนผู้พัฒนา
 ├── wav_hud.pyw          # ตัวโปรแกรมหลัก (Windowless Python HUD)
 ├── wav_hud.py           # ตัวโปรแกรมสำรอง (สำหรับรันผ่าน Command Line)
 ├── test_hud.py          # สคริปต์ตรวจสอบระบบอัตโนมัติ (Self-check Suite)
@@ -173,6 +175,19 @@ Wav-Ripper-/
 ├── LICENSE              # ใบอนุญาตเปิดเผยซอร์สโค้ด (MIT License)
 └── README.md            # คู่มือการใช้งาน (TH / EN)
 ```
+
+---
+
+## ☕ สนับสนุนผู้พัฒนา (Support & Donate)
+
+หากคุณชื่นชอบ **WAV Ripper** และโปรเจกต์นี้มีประโยชน์ต่อคุณ สามารถสนับสนุนค่าน้ำชา/กาแฟให้กับทีมพัฒนาได้ผ่าน **Thai QR Payment / PromptPay** ด้านล่างนี้ครับ:
+
+<div align="center">
+  <img src="assets/donate_qr.png" alt="Thai QR Payment - Support & Donate" width="280"/>
+  <br><br>
+  <b>สแกนเพื่อสนับสนุน (Scan to Support / PromptPay)</b><br>
+  <sub>GangGanG Community & xspexdo</sub>
+</div>
 
 ---
 
