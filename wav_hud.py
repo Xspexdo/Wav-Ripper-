@@ -36,7 +36,7 @@ BASE_DIR = APP_DIR
 LOGO_PNG = os.path.join(BUNDLE_DIR, "logo_rounded.png")
 LOGO_ICO = os.path.join(BUNDLE_DIR, "logo.ico")
 HISTORY_FILE = os.path.join(APP_DIR, "history.json")
-CURRENT_VERSION = "v2.4.6"
+CURRENT_VERSION = "v2.4.7"
 GITHUB_REPO = "Xspexdo/Wav-Ripper-"
 
 # Safe stream redirection for windowless pythonw execution
@@ -329,18 +329,18 @@ TRANSLATIONS = {
         "status_error_empty": "ข้อผิดพลาด // กรุณาใส่ลิงก์ก่อนเริ่ม",
         "confirm_purge_title": "ยืนยันการล้างประวัติ",
         "confirm_purge_msg": "ต้องการล้างประวัติการดาวน์โหลดทั้งหมดใช่หรือไม่?",
-        "status_engine_checking": "กำลังเริ่มต้น // กำลังตรวจสอบระบบดาวน์โหลด...",
+        "status_engine_checking": "กำลังตรวจสอบ // กำลังตรวจสอบระบบดาวน์โหลด...",
         "status_engine_dl_ytdlp": "กำลังติดตั้ง // ดาวน์โหลด ENGINE YT-DLP อัตโนมัติ...",
         "status_engine_dl_ffmpeg": "กำลังติดตั้ง // ดาวน์โหลด FFMPEG CODECS อัตโนมัติ...",
         "status_engine_ready": "ระบบพร้อมใช้งาน // เริ่มการดึงสตรีม...",
         "btn_engine_setup": "[ กำลังติดตั้งระบบดาวน์โหลด... กรุณารอสักครู่ ]",
         "btn_update": "อัปเดต",
-        "update_checking": "กำลังตรวจหาเวอร์ชันใหม่...",
+        "update_checking": "กำลังตรวจอัปเดต...",
         "update_latest": "WAV Ripper เป็นเวอร์ชันล่าสุดแล้ว ({ver})",
         "update_found_title": "พบเวอร์ชันใหม่",
-        "update_found_msg": "พบเวอร์ชันใหม่ {tag} บน GitHub!\n\nต้องการอัปเดตเป็นเวอร์ชันใหม่ทันทีหรือไม่?",
-        "update_git_prompt": "ตรวจพบ Git Repository ในโฟลเดอร์\n\nต้องการดึงเวอร์ชันล่าสุดด้วยคำสั่ง 'git pull' เลยหรือไม่?",
-        "update_git_success": "อัปเดตโค้ดผ่าน Git สำเร็จแล้ว!\n\nกรุณารีสตาร์ทโปรแกรมเพื่อเริ่มใช้งาน",
+        "update_found_msg": "พบเวอร์ชัน {tag} บน GitHub!\\n\\nต้องการอัปเดตทันทีหรือไม่?",
+        "update_git_prompt": "ตรวจพบ Git Repository ในโฟลเดอร์\\n\\nต้องการดึงเวอร์ชันล่าสุดด้วย 'git pull' หรือไม่?",
+        "update_git_success": "อัปเดตโค้ดผ่าน Git สำเร็จแล้ว!\\n\\nกรุณารีสตาร์ทโปรแกรม",
         "update_git_latest": "โค้ดใน Git เป็นเวอร์ชันล่าสุดแล้ว",
         "update_downloading": "กำลังดาวน์โหลดอัปเดต {tag}...",
         "update_failed": "ไม่สามารถอัปเดตได้: {err}",
@@ -1992,50 +1992,59 @@ del "%~f0"
             os._exit(0)
         except Exception as e:
             self.after(0, mb.showerror, "UPDATE ERROR", self.t("update_failed", err=str(e)))
-        target_dir = os.path.normpath(os.path.expanduser(self.download_dir_var.get()))
-        os.makedirs(target_dir, exist_ok=True)
 
-        selected_fmt = self.selected_format
-        fmt_cfg = FORMAT_CONFIG.get(selected_fmt, FORMAT_CONFIG["WAV"])
-        lvl_cfg = self.get_current_level_cfg()
+    def _execute_download(self, url):
+        try:
+            target_dir = os.path.normpath(os.path.expanduser(self.download_dir_var.get()))
+            os.makedirs(target_dir, exist_ok=True)
 
-        cmd = [
-            self.yt_dlp_bin,
-            "-P", target_dir,
-            "--no-playlist",
-            "--newline",
-        ]
+            selected_fmt = self.selected_format
+            fmt_cfg = FORMAT_CONFIG.get(selected_fmt, FORMAT_CONFIG["WAV"])
+            lvl_cfg = self.get_current_level_cfg()
 
-        cmd.extend(lvl_cfg["args"])
+            cmd = [
+                self.yt_dlp_bin,
+                "-P", target_dir,
+                "--no-playlist",
+                "--newline",
+            ]
 
-        if self.ffmpeg_dir:
-            cmd.extend(["--ffmpeg-location", self.ffmpeg_dir])
+            cmd.extend(lvl_cfg["args"])
 
-        cmd.append(url)
+            if self.ffmpeg_dir:
+                cmd.extend(["--ffmpeg-location", self.ffmpeg_dir])
 
-        self.is_downloading = True
-        self._last_download_title = ""
-        self._last_process_error = ""
-        self.execute_btn.configure(
-            state="disabled",
-            text=self.t("btn_downloading", tag=lvl_cfg["btn_tag"]),
-            fg_color="#181a24",
-            text_color=TEXT_MUTED,
-        )
-        self.abort_btn.configure(state="normal")
-        self.status_var.set(self.t("status_connecting", tag=lvl_cfg["btn_tag"]))
-        self.status_display.configure(text_color=ACCENT_CYAN)
-        self.telemetry_var.set("SPEED: ACQUIRING  |  ETA: --:--")
+            cmd.append(url)
 
-        # Light up progress bar
-        self.progress_bar.configure(progress_color=ACCENT_CYAN)
-        self.progress_bar.set(0.0)
+            self.is_downloading = True
+            self._last_download_title = ""
+            self._last_process_error = ""
+            self.execute_btn.configure(
+                state="disabled",
+                text=self.t("btn_downloading", tag=lvl_cfg["btn_tag"]),
+                fg_color="#181a24",
+                text_color=TEXT_MUTED,
+            )
+            self.abort_btn.configure(state="normal")
+            self.status_var.set(self.t("status_connecting", tag=lvl_cfg["btn_tag"]))
+            self.status_display.configure(text_color=ACCENT_CYAN)
+            self.telemetry_var.set("SPEED: ACQUIRING  |  ETA: --:--")
 
-        threading.Thread(
-            target=self._run_process_thread,
-            args=(cmd, selected_fmt, fmt_cfg, lvl_cfg, url, target_dir),
-            daemon=True,
-        ).start()
+            # Light up progress bar
+            self.progress_bar.configure(progress_color=ACCENT_CYAN)
+            self.progress_bar.set(0.0)
+
+            threading.Thread(
+                target=self._run_process_thread,
+                args=(cmd, selected_fmt, fmt_cfg, lvl_cfg, url, target_dir),
+                daemon=True,
+            ).start()
+        except Exception as e:
+            self.is_downloading = False
+            self._update_quality_display()
+            self.execute_btn.configure(state="normal", fg_color=ACCENT_CYAN, text_color="#060709")
+            self.status_var.set(f"ERROR // {str(e)[:40].upper()}")
+            self.status_display.configure(text_color=ACCENT_RED)
 
     def _run_process_thread(self, cmd, selected_fmt, fmt_cfg, lvl_cfg, url, target_dir):
         startupinfo = None
@@ -2166,11 +2175,23 @@ del "%~f0"
         self.status_display.configure(text_color=ACCENT_RED)
 
     def abort_process(self):
-        if self.process and self.is_downloading:
+        self.is_downloading = False
+        if self.process:
             try:
                 self.process.terminate()
             except Exception:
                 pass
+            self.process = None
+        self._update_quality_display()
+        self.execute_btn.configure(
+            state="normal",
+            fg_color=ACCENT_CYAN,
+            text_color="#060709",
+        )
+        self.abort_btn.configure(state="disabled")
+        self.status_var.set(self.t("status_ready"))
+        self.status_display.configure(text_color=TEXT_CYAN)
+        self.telemetry_var.set(self.t("telemetry_ready"))
 
 
 def main():
