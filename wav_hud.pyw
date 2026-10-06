@@ -36,7 +36,7 @@ BASE_DIR = APP_DIR
 LOGO_PNG = os.path.join(BUNDLE_DIR, "logo_rounded.png")
 LOGO_ICO = os.path.join(BUNDLE_DIR, "logo.ico")
 HISTORY_FILE = os.path.join(APP_DIR, "history.json")
-CURRENT_VERSION = "v2.4.3"
+CURRENT_VERSION = "v2.4.5"
 GITHUB_REPO = "Xspexdo/Wav-Ripper-"
 
 # Safe stream redirection for windowless pythonw execution
