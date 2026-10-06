@@ -32,6 +32,7 @@ jobs:
         run: |
           python -m PyInstaller --noconfirm --clean WAV-Ripper.spec
           Compress-Archive -Path dist/WAV-Ripper.exe -DestinationPath dist/WAV-Ripper-Windows.zip -Force
+          Compress-Archive -Path dist/WAV-Ripper-Portable -DestinationPath dist/WAV-Ripper-Portable.zip -Force
 
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
@@ -40,5 +41,6 @@ jobs:
           files: |
             dist/WAV-Ripper.exe
             dist/WAV-Ripper-Windows.zip
+            dist/WAV-Ripper-Portable.zip
           name: "WAV Ripper ${{ github.ref_name }}"
           generate_release_notes: true

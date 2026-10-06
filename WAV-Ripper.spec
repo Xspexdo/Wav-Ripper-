@@ -10,6 +10,8 @@ from PyInstaller.utils.hooks import collect_all
 
 datas = [('logo_rounded.png', '.'), ('logo.ico', '.')]
 binaries = []
+if os.path.exists(r'C:\Windows\System32\msvcp140.dll'):
+    binaries.append((r'C:\Windows\System32\msvcp140.dll', '.'))
 hiddenimports = []
 tmp_ret = collect_all('customtkinter')
 datas += tmp_ret[0]; binaries += tmp_ret[1]; hiddenimports += tmp_ret[2]
@@ -63,4 +65,28 @@ exe = EXE(
     codesign_identity=None,
     entitlements_file=None,
     icon=['logo.ico'],
+)
+
+exe_onedir = EXE(
+    pyz,
+    a.scripts,
+    [],
+    exclude_binaries=True,
+    name='WAV-Ripper',
+    debug=False,
+    bootloader_ignore_signals=False,
+    strip=False,
+    upx=True,
+    console=False,
+    icon=['logo.ico'],
+)
+
+coll = COLLECT(
+    exe_onedir,
+    a.binaries,
+    a.datas,
+    strip=False,
+    upx=True,
+    upx_exclude=[],
+    name='WAV-Ripper-Portable',
 )
