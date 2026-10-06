@@ -3,11 +3,14 @@ __pycache__/
 *.py[cod]
 *$py.class
 
-# Environments
+# Environments & Build Artifacts
 .venv/
 venv/
 env/
 ENV/
+build/
+dist/
+*.spec
 
 # Local User Data & History
 history.json

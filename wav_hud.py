@@ -25,10 +25,17 @@ from PIL import Image
 import customtkinter as ctk
 
 # Directory and Assets paths
-BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-LOGO_PNG = os.path.join(BASE_DIR, "logo_rounded.png")
-LOGO_ICO = os.path.join(BASE_DIR, "logo.ico")
-HISTORY_FILE = os.path.join(BASE_DIR, "history.json")
+if getattr(sys, "frozen", False):
+    BUNDLE_DIR = getattr(sys, "_MEIPASS", os.path.dirname(sys.executable))
+    APP_DIR = os.path.dirname(sys.executable)
+else:
+    BUNDLE_DIR = os.path.dirname(os.path.abspath(__file__))
+    APP_DIR = BUNDLE_DIR
+
+BASE_DIR = APP_DIR
+LOGO_PNG = os.path.join(BUNDLE_DIR, "logo_rounded.png")
+LOGO_ICO = os.path.join(BUNDLE_DIR, "logo.ico")
+HISTORY_FILE = os.path.join(APP_DIR, "history.json")
 
 # Safe stream redirection for windowless pythonw execution
 if sys.stdout is None:
