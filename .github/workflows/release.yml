@@ -30,7 +30,7 @@ jobs:
 
       - name: Build Standalone Executable
         run: |
-          python -m PyInstaller --noconfirm --onefile --windowed --icon "logo.ico" --add-data "logo_rounded.png;." --add-data "logo.ico;." --collect-all customtkinter --exclude-module numpy --exclude-module scipy --exclude-module matplotlib --exclude-module pandas --name "WAV-Ripper" wav_hud.pyw
+          python -m PyInstaller --noconfirm --clean WAV-Ripper.spec
           Compress-Archive -Path dist/WAV-Ripper.exe -DestinationPath dist/WAV-Ripper-Windows.zip -Force
 
       - name: Create GitHub Release
