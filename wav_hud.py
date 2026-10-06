@@ -36,7 +36,7 @@ BASE_DIR = APP_DIR
 LOGO_PNG = os.path.join(BUNDLE_DIR, "logo_rounded.png")
 LOGO_ICO = os.path.join(BUNDLE_DIR, "logo.ico")
 HISTORY_FILE = os.path.join(APP_DIR, "history.json")
-CURRENT_VERSION = "v2.4.5"
+CURRENT_VERSION = "v2.4.6"
 GITHUB_REPO = "Xspexdo/Wav-Ripper-"
 
 # Safe stream redirection for windowless pythonw execution
@@ -1779,49 +1779,34 @@ class MediaRipperApp(ctk.CTk):
 
             # 2. Setup ffmpeg if missing
             if not self.ffmpeg_dir:
-                # Try winget silently first if available
-                if shutil.which("winget"):
-                    self.after(0, self.status_var.set, self.t("status_engine_checking"))
-                    try:
-                        subprocess.run(
-                            ["winget", "install", "yt-dlp.FFmpeg", "--accept-source-agreements", "--accept-package-agreements", "--silent"],
-                            creationflags=subprocess.CREATE_NO_WINDOW if sys.platform == "win32" else 0,
-                            timeout=60,
-                        )
-                        self.ffmpeg_dir = find_ffmpeg_dir()
-                    except Exception:
-                        pass
+                self.after(0, self.status_var.set, self.t("status_engine_dl_ffmpeg"))
+                zip_path = os.path.join(engine_dir, "ffmpeg.zip")
 
-                # If still not found, download portable ffmpeg zip
-                if not self.ffmpeg_dir:
-                    self.after(0, self.status_var.set, self.t("status_engine_dl_ffmpeg"))
-                    zip_path = os.path.join(engine_dir, "ffmpeg.zip")
+                def _ff_prog(dl, total):
+                    pct = dl / total
+                    dl_mb = dl / (1024 * 1024)
+                    tot_mb = total / (1024 * 1024)
+                    self.after(0, self._update_engine_progress, pct, dl_mb, tot_mb)
 
-                    def _ff_prog(dl, total):
-                        pct = dl / total
-                        dl_mb = dl / (1024 * 1024)
-                        tot_mb = total / (1024 * 1024)
-                        self.after(0, self._update_engine_progress, pct, dl_mb, tot_mb)
+                download_file_with_progress(
+                    "https://github.com/ffbinaries/ffbinaries-prebuilt/releases/download/v6.1/ffmpeg-6.1-win-64.zip",
+                    zip_path,
+                    _ff_prog,
+                )
 
-                    download_file_with_progress(
-                        "https://github.com/ffbinaries/ffbinaries-prebuilt/releases/download/v6.1/ffmpeg-6.1-win-64.zip",
-                        zip_path,
-                        _ff_prog,
-                    )
+                import zipfile
+                with zipfile.ZipFile(zip_path, "r") as z:
+                    for item in z.namelist():
+                        if item.lower().endswith("ffmpeg.exe"):
+                            with z.open(item) as src, open(os.path.join(engine_dir, "ffmpeg.exe"), "wb") as dst:
+                                shutil.copyfileobj(src, dst)
+                            break
+                try:
+                    os.remove(zip_path)
+                except Exception:
+                    pass
 
-                    import zipfile
-                    with zipfile.ZipFile(zip_path, "r") as z:
-                        for item in z.namelist():
-                            if item.lower().endswith("ffmpeg.exe"):
-                                with z.open(item) as src, open(os.path.join(engine_dir, "ffmpeg.exe"), "wb") as dst:
-                                    shutil.copyfileobj(src, dst)
-                                break
-                    try:
-                        os.remove(zip_path)
-                    except Exception:
-                        pass
-
-                    self.ffmpeg_dir = engine_dir
+                self.ffmpeg_dir = engine_dir
 
             self.after(0, self.status_var.set, self.t("status_engine_ready"))
             self.after(500, self._on_engines_ready, target_url)
@@ -2149,6 +2134,14 @@ del "%~f0"
             # Catalog into persistent history
             title = self._last_download_title if self._last_download_title else url
             self._add_to_history(title, url, selected_fmt, fmt_cfg, lvl_cfg, target_dir)
+
+            # Automatically reveal output folder in Windows Explorer
+            if os.path.exists(target_dir):
+                if sys.platform == "win32":
+                    try:
+                        os.startfile(target_dir)
+                    except Exception:
+                        pass
         else:
             err_msg = getattr(self, "_last_process_error", "")
             if err_msg:
