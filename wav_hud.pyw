@@ -232,6 +232,90 @@ FORMAT_CONFIG = {
 }
 
 
+TRANSLATIONS = {
+    "en": {
+        "nav_ripper": "// RIPPER HUD",
+        "nav_history": "// HISTORY [ {count} ]",
+        "clear_history": "[ CLEAR HISTORY ]",
+        "url_header": "// TARGET STREAM URL",
+        "url_placeholder": "Paste video or audio link (YouTube, SoundCloud, TikTok, Bilibili...)",
+        "btn_paste": "[PASTE]",
+        "btn_clear": "[CLEAR]",
+        "settings_header": "// FORMAT SELECTION & DESTINATION",
+        "fmt_lbl": "FORMAT:",
+        "q_lbl": "QUALITY:",
+        "dest_lbl": "SAVE TO:",
+        "browse_btn": "[BROWSE]",
+        "open_btn": "[OPEN DIR]",
+        "btn_extract": ">>> START EXTRACTION [{tag}] <<<",
+        "btn_download": ">>> START DOWNLOAD [{tag}] <<<",
+        "btn_downloading": "[ DOWNLOADING {tag}... PLEASE WAIT ]",
+        "btn_abort": "[ABORT]",
+        "status_ready": "STATUS // READY FOR STREAM",
+        "telemetry_ready": "SPEED: -- MB/s  |  ETA: --:--",
+        "engine_footer": "// ENGINE: YT-DLP + FFMPEG HI-RES",
+        "history_total": "TOTAL EXTRACTED: {count} ITEMS",
+        "history_sub": "PERSISTENT DOWNLOAD CATALOG",
+        "history_empty_title": "// NO EXTRACTION RECORDS FOUND",
+        "history_empty_desc": "Streams downloaded with WAV Ripper will be cataloged here automatically.",
+        "history_copy": "[COPY LINK]",
+        "history_open": "[OPEN DIR]",
+        "copied": "URL COPIED TO CLIPBOARD // OK",
+        "url_loaded": "URL LOADED // READY TO EXECUTE",
+        "status_connecting": "CONNECTING // ACQUIRING {tag} STREAM...",
+        "status_downloading": "DOWNLOADING // {percent:.1f}%",
+        "status_converting": "CONVERTING // ENCODING AUDIO...",
+        "status_merging": "MERGING // COMBINING AUDIO + VIDEO...",
+        "status_parsing": "PARSING // STREAM METADATA OK",
+        "status_complete": "COMPLETE // {tag} SAVED TO DOWNLOADS",
+        "telemetry_finished": "STATUS: 100% OK  |  TASK FINISHED",
+        "status_error_empty": "ERROR // EMPTY TARGET URL",
+        "confirm_purge_title": "CONFIRM PURGE",
+        "confirm_purge_msg": "Purge all extraction history records?",
+    },
+    "th": {
+        "nav_ripper": "// หน้าดาวน์โหลด",
+        "nav_history": "// ประวัติการโหลด [ {count} ]",
+        "clear_history": "[ ล้างประวัติ ]",
+        "url_header": "// ลิงก์ที่ต้องการดาวน์โหลด",
+        "url_placeholder": "วางลิงก์วิดีโอหรือเพลง (YouTube, SoundCloud, TikTok, Bilibili...)",
+        "btn_paste": "[วางลิงก์]",
+        "btn_clear": "[ล้างช่อง]",
+        "settings_header": "// เลือกฟอร์แมตและที่เก็บไฟล์",
+        "fmt_lbl": "รูปแบบ:",
+        "q_lbl": "คุณภาพ:",
+        "dest_lbl": "บันทึกที่:",
+        "browse_btn": "[เลือกโฟลเดอร์]",
+        "open_btn": "[เปิดโฟลเดอร์]",
+        "btn_extract": ">>> เริ่มแยกไฟล์เสียง [{tag}] <<<",
+        "btn_download": ">>> เริ่มดาวน์โหลดวิดีโอ [{tag}] <<<",
+        "btn_downloading": "[ กำลังดาวน์โหลด {tag}... กรุณารอสักครู่ ]",
+        "btn_abort": "[ยกเลิก]",
+        "status_ready": "สถานะ // พร้อมรับลิงก์ดาวน์โหลด",
+        "telemetry_ready": "ความเร็ว: -- MB/s  |  เวลาที่เหลือ: --:--",
+        "engine_footer": "// ขับเคลื่อนด้วย: YT-DLP + FFMPEG HI-RES",
+        "history_total": "ดาวน์โหลดทั้งหมด: {count} รายการ",
+        "history_sub": "สมุดบันทึกประวัติการดาวน์โหลดถาวร",
+        "history_empty_title": "// ไม่พบบันทึกประวัติการดาวน์โหลด",
+        "history_empty_desc": "ไฟล์ที่ดาวน์โหลดผ่าน WAV Ripper จะแสดงที่นี่อัตโนมัติ",
+        "history_copy": "[คัดลอกลิงก์]",
+        "history_open": "[เปิดโฟลเดอร์]",
+        "copied": "คัดลอกลิงก์ลงคลิปบอร์ดแล้ว // เรียบร้อย",
+        "url_loaded": "โหลดลิงก์แล้ว // พร้อมเริ่มดาวน์โหลด",
+        "status_connecting": "กำลังเชื่อมต่อ // ค้นหาสตรีม {tag}...",
+        "status_downloading": "กำลังดาวน์โหลด // {percent:.1f}%",
+        "status_converting": "กำลังแปลงสัญญาณ // บันทึกไฟล์เสียง...",
+        "status_merging": "กำลังรวมไฟล์ // รวมสัญญาณภาพและเสียง...",
+        "status_parsing": "กำลังอ่านข้อมูล // ตรวจสอบสตรีมสำเร็จ",
+        "status_complete": "เสร็จสิ้น // บันทึก {tag} ลงเครื่องเรียบร้อย",
+        "telemetry_finished": "สถานะ: 100% สำเร็จ  |  เสร็จสมบูรณ์",
+        "status_error_empty": "ข้อผิดพลาด // กรุณาใส่ลิงก์ก่อนเริ่ม",
+        "confirm_purge_title": "ยืนยันการล้างประวัติ",
+        "confirm_purge_msg": "ต้องการล้างประวัติการดาวน์โหลดทั้งหมดใช่หรือไม่?",
+    },
+}
+
+
 def load_history():
     """Load extraction history from local JSON file."""
     if not os.path.isfile(HISTORY_FILE):
@@ -346,6 +430,16 @@ class MediaRipperApp(ctk.CTk):
 
         # Build Minimal HUD UI Components
         self.build_ui()
+
+        # Language setup: auto-detect system locale
+        import locale
+        try:
+            loc_name = (locale.getlocale()[0] or "").lower()
+            self.current_lang = "th" if "thai" in loc_name else "en"
+        except Exception:
+            self.current_lang = "th"
+
+        self.apply_language()
 
         # Initialize quality display
         self._update_quality_display()
@@ -472,8 +566,8 @@ class MediaRipperApp(ctk.CTk):
             )
 
         if hasattr(self, "execute_btn") and not self.is_downloading:
-            action_word = "DOWNLOAD" if cfg["type"] == "video" else "EXTRACTION"
-            self.execute_btn.configure(text=f">>> START {action_word} [{lvl_cfg['btn_tag']}] <<<")
+            key = "btn_download" if cfg["type"] == "video" else "btn_extract"
+            self.execute_btn.configure(text=self.t(key, tag=lvl_cfg["btn_tag"]))
 
     # ---------------- UI Construction ---------------- #
 
@@ -522,13 +616,13 @@ class MediaRipperApp(ctk.CTk):
         self.footer_frame.pack_propagate(False)
 
         # Left tag: System engine & status
-        engine_lbl = ctk.CTkLabel(
+        self.footer_engine_lbl = ctk.CTkLabel(
             self.footer_frame,
-            text="// ENGINE: YT-DLP + FFMPEG HI-RES",
+            text=self.t("engine_footer"),
             font=ctk.CTkFont(family="Consolas", size=9, weight="bold"),
             text_color="#334155",
         )
-        engine_lbl.pack(side="left")
+        self.footer_engine_lbl.pack(side="left")
 
         # Right tag: Glowing High-Tech Developer Credit (CR: xspexdo)
         self.cr_btn = ctk.CTkButton(
@@ -552,6 +646,83 @@ class MediaRipperApp(ctk.CTk):
             webbrowser.open_new_tab("https://github.com/xspexdo")
         except Exception:
             pass
+
+    def t(self, key, **kwargs):
+        lang = getattr(self, "current_lang", "en")
+        pack = TRANSLATIONS.get(lang, TRANSLATIONS["en"])
+        val = pack.get(key, TRANSLATIONS["en"].get(key, ""))
+        if kwargs:
+            try:
+                val = val.format(**kwargs)
+            except Exception:
+                pass
+        return val
+
+    def toggle_language(self):
+        self.current_lang = "th" if getattr(self, "current_lang", "en") == "en" else "en"
+        self.apply_language()
+
+    def apply_language(self):
+        # Update toggle button text
+        if hasattr(self, "btn_lang"):
+            self.btn_lang.configure(text="EN" if self.current_lang == "th" else "TH")
+
+        # Navigation Bar
+        if hasattr(self, "btn_nav_ripper"):
+            self.btn_nav_ripper.configure(text=self.t("nav_ripper"))
+        if hasattr(self, "btn_nav_history"):
+            self.btn_nav_history.configure(text=self.t("nav_history", count=len(self.history_items)))
+        if hasattr(self, "btn_clear_history"):
+            self.btn_clear_history.configure(text=self.t("clear_history"))
+
+        # URL Card
+        if hasattr(self, "url_header_lbl"):
+            self.url_header_lbl.configure(text=self.t("url_header"))
+        if hasattr(self, "url_entry"):
+            self.url_entry.configure(placeholder_text=self.t("url_placeholder"))
+        if hasattr(self, "paste_btn"):
+            self.paste_btn.configure(text=self.t("btn_paste"))
+        if hasattr(self, "clear_btn"):
+            self.clear_btn.configure(text=self.t("btn_clear"))
+
+        # Settings Card
+        if hasattr(self, "settings_header_lbl"):
+            self.settings_header_lbl.configure(text=self.t("settings_header"))
+        if hasattr(self, "fmt_lbl"):
+            self.fmt_lbl.configure(text=self.t("fmt_lbl"))
+        if hasattr(self, "q_lbl"):
+            self.q_lbl.configure(text=self.t("q_lbl"))
+        if hasattr(self, "dest_lbl"):
+            self.dest_lbl.configure(text=self.t("dest_lbl"))
+        if hasattr(self, "browse_btn"):
+            self.browse_btn.configure(text=self.t("browse_btn"))
+        if hasattr(self, "open_btn"):
+            self.open_btn.configure(text=self.t("open_btn"))
+
+        # Progress Card
+        if hasattr(self, "abort_btn"):
+            self.abort_btn.configure(text=self.t("btn_abort"))
+
+        # Idle Status & Telemetry
+        if not self.is_downloading:
+            self.status_var.set(self.t("status_ready"))
+            self.telemetry_var.set(self.t("telemetry_ready"))
+
+        # Footer
+        if hasattr(self, "footer_engine_lbl"):
+            self.footer_engine_lbl.configure(text=self.t("engine_footer"))
+
+        # History View
+        if hasattr(self, "history_sub_lbl"):
+            self.history_sub_lbl.configure(text=self.t("history_sub"))
+        self.update_history_badge()
+
+        # Update execute button text
+        self._update_quality_display()
+
+        # Re-render history if currently displayed
+        if self.current_tab == "history":
+            self.render_history_items()
 
     def build_titlebar(self):
         # Top Neon Accent Line
@@ -615,6 +786,23 @@ class MediaRipperApp(ctk.CTk):
         # Right window control buttons
         controls_frame = ctk.CTkFrame(self.titlebar_frame, fg_color="transparent")
         controls_frame.pack(side="right", padx=(0, 8), fill="y")
+
+        # Language Switcher Toggle [ EN | TH ]
+        self.btn_lang = ctk.CTkButton(
+            controls_frame,
+            text="EN" if getattr(self, "current_lang", "en") == "th" else "TH",
+            font=ctk.CTkFont(family="Consolas", size=10, weight="bold"),
+            fg_color="#141926",
+            hover_color="#1f283d",
+            border_color="#2b3754",
+            border_width=1,
+            text_color=ACCENT_CYAN,
+            width=36,
+            height=26,
+            corner_radius=6,
+            command=self.toggle_language,
+        )
+        self.btn_lang.pack(side="left", padx=(0, 6), pady=8)
 
         min_btn = ctk.CTkButton(
             controls_frame,
@@ -738,13 +926,13 @@ class MediaRipperApp(ctk.CTk):
         self.render_history_items()
 
     def build_url_card(self, parent):
-        header = ctk.CTkLabel(
+        self.url_header_lbl = ctk.CTkLabel(
             parent,
-            text="// TARGET STREAM URL",
+            text=self.t("url_header"),
             font=ctk.CTkFont(family="Consolas", size=13, weight="bold"),
             text_color=ACCENT_CYAN,
         )
-        header.pack(anchor="w", pady=(0, 4))
+        self.url_header_lbl.pack(anchor="w", pady=(0, 4))
 
         card = ctk.CTkFrame(
             parent,
@@ -762,7 +950,7 @@ class MediaRipperApp(ctk.CTk):
             row,
             textvariable=self.url_var,
             font=ctk.CTkFont(family="Consolas", size=11),
-            placeholder_text="Paste video or audio link (YouTube, SoundCloud, TikTok, Bilibili...)",
+            placeholder_text=self.t("url_placeholder"),
             placeholder_text_color=TEXT_MUTED,
             fg_color=BG_INPUT,
             border_color="#242838",
@@ -793,9 +981,9 @@ class MediaRipperApp(ctk.CTk):
         # Dark HUD Right-click Context Menu
         self.setup_entry_context_menu(self.url_entry)
 
-        paste_btn = ctk.CTkButton(
+        self.paste_btn = ctk.CTkButton(
             row,
-            text="[PASTE]",
+            text=self.t("btn_paste"),
             font=ctk.CTkFont(family="Consolas", size=11, weight="bold"),
             fg_color="#151926",
             hover_color="#1f2538",
@@ -807,11 +995,11 @@ class MediaRipperApp(ctk.CTk):
             corner_radius=8,
             command=self.paste_clipboard,
         )
-        paste_btn.pack(side="left", padx=(0, 6))
+        self.paste_btn.pack(side="left", padx=(0, 6))
 
-        clear_btn = ctk.CTkButton(
+        self.clear_btn = ctk.CTkButton(
             row,
-            text="[CLEAR]",
+            text=self.t("btn_clear"),
             font=ctk.CTkFont(family="Consolas", size=11, weight="bold"),
             fg_color="#151926",
             hover_color="#1f2538",
@@ -823,16 +1011,16 @@ class MediaRipperApp(ctk.CTk):
             corner_radius=8,
             command=lambda: self.url_var.set(""),
         )
-        clear_btn.pack(side="left")
+        self.clear_btn.pack(side="left")
 
     def build_settings_card(self, parent):
-        header = ctk.CTkLabel(
+        self.settings_header_lbl = ctk.CTkLabel(
             parent,
-            text="// FORMAT SELECTION & DESTINATION",
+            text=self.t("settings_header"),
             font=ctk.CTkFont(family="Consolas", size=13, weight="bold"),
             text_color=ACCENT_CYAN,
         )
-        header.pack(anchor="w", pady=(0, 4))
+        self.settings_header_lbl.pack(anchor="w", pady=(0, 4))
 
         card = ctk.CTkFrame(
             parent,
@@ -847,15 +1035,15 @@ class MediaRipperApp(ctk.CTk):
         row1 = ctk.CTkFrame(card, fg_color="transparent")
         row1.pack(fill="x", padx=10, pady=(8, 4))
 
-        fmt_lbl = ctk.CTkLabel(
+        self.fmt_lbl = ctk.CTkLabel(
             row1,
-            text="FORMAT:",
+            text=self.t("fmt_lbl"),
             font=ctk.CTkFont(family="Consolas", size=11, weight="bold"),
             text_color=TEXT_MUTED,
             width=64,
             anchor="w",
         )
-        fmt_lbl.pack(side="left")
+        self.fmt_lbl.pack(side="left")
 
         # Sleek format pill buttons with clean high-contrast text
         pills_frame = ctk.CTkFrame(row1, fg_color="transparent")
@@ -882,15 +1070,15 @@ class MediaRipperApp(ctk.CTk):
         row2 = ctk.CTkFrame(card, fg_color="transparent")
         row2.pack(fill="x", padx=10, pady=(0, 6))
 
-        q_lbl = ctk.CTkLabel(
+        self.q_lbl = ctk.CTkLabel(
             row2,
-            text="QUALITY:",
+            text=self.t("q_lbl"),
             font=ctk.CTkFont(family="Consolas", size=11, weight="bold"),
             text_color=TEXT_MUTED,
             width=64,
             anchor="w",
         )
-        q_lbl.pack(side="left")
+        self.q_lbl.pack(side="left")
 
         # [-] Decrease Quality Button
         self.btn_quality_dec = ctk.CTkButton(
@@ -956,15 +1144,15 @@ class MediaRipperApp(ctk.CTk):
         row3 = ctk.CTkFrame(card, fg_color="transparent")
         row3.pack(fill="x", padx=10, pady=(0, 8))
 
-        dest_lbl = ctk.CTkLabel(
+        self.dest_lbl = ctk.CTkLabel(
             row3,
-            text="SAVE TO:",
+            text=self.t("dest_lbl"),
             font=ctk.CTkFont(family="Consolas", size=11, weight="bold"),
             text_color=TEXT_MUTED,
             width=64,
             anchor="w",
         )
-        dest_lbl.pack(side="left")
+        self.dest_lbl.pack(side="left")
 
         dest_entry = ctk.CTkEntry(
             row3,
@@ -979,9 +1167,9 @@ class MediaRipperApp(ctk.CTk):
         )
         dest_entry.pack(side="left", fill="x", expand=True, padx=(0, 8))
 
-        browse_btn = ctk.CTkButton(
+        self.browse_btn = ctk.CTkButton(
             row3,
-            text="[BROWSE]",
+            text=self.t("browse_btn"),
             font=ctk.CTkFont(family="Consolas", size=10, weight="bold"),
             fg_color="#151926",
             hover_color="#1f2538",
@@ -993,11 +1181,11 @@ class MediaRipperApp(ctk.CTk):
             corner_radius=8,
             command=self.browse_destination,
         )
-        browse_btn.pack(side="left", padx=(0, 6))
+        self.browse_btn.pack(side="left", padx=(0, 6))
 
-        open_btn = ctk.CTkButton(
+        self.open_btn = ctk.CTkButton(
             row3,
-            text="[OPEN DIR]",
+            text=self.t("open_btn"),
             font=ctk.CTkFont(family="Consolas", size=10, weight="bold"),
             fg_color="#151926",
             hover_color="#1f2538",
@@ -1009,7 +1197,7 @@ class MediaRipperApp(ctk.CTk):
             corner_radius=8,
             command=self.open_destination,
         )
-        open_btn.pack(side="left")
+        self.open_btn.pack(side="left")
 
     def build_progress_card(self, parent):
         # Big Execute & Abort Button Bar
@@ -1095,19 +1283,19 @@ class MediaRipperApp(ctk.CTk):
         count = len(self.history_items)
         self.history_total_lbl = ctk.CTkLabel(
             summary_row,
-            text=f"TOTAL EXTRACTED: {count} ITEMS",
+            text=self.t("history_total", count=count),
             font=ctk.CTkFont(family="Consolas", size=12, weight="bold"),
             text_color=ACCENT_CYAN,
         )
         self.history_total_lbl.pack(side="left")
 
-        sub_lbl = ctk.CTkLabel(
+        self.history_sub_lbl = ctk.CTkLabel(
             summary_row,
-            text="PERSISTENT DOWNLOAD CATALOG",
+            text=self.t("history_sub"),
             font=ctk.CTkFont(family="Consolas", size=10),
             text_color=TEXT_MUTED,
         )
-        sub_lbl.pack(side="right")
+        self.history_sub_lbl.pack(side="right")
 
         # Scrollable area for history items
         self.history_scroll = ctk.CTkScrollableFrame(
@@ -1130,14 +1318,14 @@ class MediaRipperApp(ctk.CTk):
 
             ctk.CTkLabel(
                 empty_box,
-                text="// NO EXTRACTION RECORDS FOUND",
+                text=self.t("history_empty_title"),
                 font=ctk.CTkFont(family="Consolas", size=13, weight="bold"),
                 text_color=TEXT_MUTED,
             ).pack(pady=(0, 6))
 
             ctk.CTkLabel(
                 empty_box,
-                text="Streams downloaded with WAV Ripper will be cataloged here automatically.",
+                text=self.t("history_empty_desc"),
                 font=ctk.CTkFont(family="Consolas", size=10),
                 text_color="#475569",
             ).pack()
@@ -1219,14 +1407,14 @@ class MediaRipperApp(ctk.CTk):
 
             copy_btn = ctk.CTkButton(
                 btn_box,
-                text="[COPY LINK]",
+                text=self.t("history_copy"),
                 font=ctk.CTkFont(family="Consolas", size=9, weight="bold"),
                 fg_color="#151926",
                 hover_color="#1f2538",
                 border_color="#2e354d",
                 border_width=1,
                 text_color=TEXT_CYAN,
-                width=76,
+                width=86 if getattr(self, "current_lang", "en") == "th" else 76,
                 height=24,
                 corner_radius=6,
                 command=lambda u=url_str: self._copy_to_clip(u),
@@ -1236,14 +1424,14 @@ class MediaRipperApp(ctk.CTk):
             dest_path = item.get("dest_path", "")
             open_btn = ctk.CTkButton(
                 btn_box,
-                text="[OPEN DIR]",
+                text=self.t("history_open"),
                 font=ctk.CTkFont(family="Consolas", size=9, weight="bold"),
                 fg_color="#151926",
                 hover_color="#1f2538",
                 border_color="#2e354d",
                 border_width=1,
                 text_color=TEXT_SECONDARY,
-                width=76,
+                width=86 if getattr(self, "current_lang", "en") == "th" else 76,
                 height=24,
                 corner_radius=6,
                 command=lambda d=dest_path: self._open_history_dir(d),
@@ -1254,7 +1442,7 @@ class MediaRipperApp(ctk.CTk):
         try:
             self.clipboard_clear()
             self.clipboard_append(text)
-            self.status_var.set("URL COPIED TO CLIPBOARD // OK")
+            self.status_var.set(self.t("copied"))
             self.status_display.configure(text_color=TEXT_CYAN)
         except Exception:
             pass
@@ -1274,7 +1462,7 @@ class MediaRipperApp(ctk.CTk):
     def clear_history(self):
         if not self.history_items:
             return
-        if mb.askyesno("CONFIRM PURGE", "Purge all extraction history records?"):
+        if mb.askyesno(self.t("confirm_purge_title"), self.t("confirm_purge_msg")):
             self.history_items = []
             save_history([])
             self.update_history_badge()
@@ -1282,9 +1470,9 @@ class MediaRipperApp(ctk.CTk):
 
     def update_history_badge(self):
         count = len(self.history_items)
-        self.btn_nav_history.configure(text=f"// HISTORY [ {count} ]")
+        self.btn_nav_history.configure(text=self.t("nav_history", count=count))
         if hasattr(self, "history_total_lbl"):
-            self.history_total_lbl.configure(text=f"TOTAL EXTRACTED: {count} ITEMS")
+            self.history_total_lbl.configure(text=self.t("history_total", count=count))
 
     def _add_to_history(self, title, url, fmt_name, fmt_cfg, lvl_cfg, dest_dir):
         entry = {
@@ -1311,7 +1499,7 @@ class MediaRipperApp(ctk.CTk):
                 self.url_var.set(clip)
                 self.url_entry.delete(0, "end")
                 self.url_entry.insert(0, clip)
-                self.status_var.set("URL LOADED // READY TO EXECUTE")
+                self.status_var.set(self.t("url_loaded"))
                 self.status_display.configure(text_color=TEXT_CYAN)
         except Exception:
             pass
@@ -1387,7 +1575,7 @@ class MediaRipperApp(ctk.CTk):
 
         url = self.url_var.get().strip()
         if not url:
-            self.status_var.set("ERROR // EMPTY TARGET URL")
+            self.status_var.set(self.t("status_error_empty"))
             self.status_display.configure(text_color=ACCENT_RED)
             return
 
@@ -1417,12 +1605,12 @@ class MediaRipperApp(ctk.CTk):
         self._last_process_error = ""
         self.execute_btn.configure(
             state="disabled",
-            text=f"[ DOWNLOADING {lvl_cfg['btn_tag']}... PLEASE WAIT ]",
+            text=self.t("btn_downloading", tag=lvl_cfg["btn_tag"]),
             fg_color="#181a24",
             text_color=TEXT_MUTED,
         )
         self.abort_btn.configure(state="normal")
-        self.status_var.set(f"CONNECTING // ACQUIRING {lvl_cfg['btn_tag']} STREAM...")
+        self.status_var.set(self.t("status_connecting", tag=lvl_cfg["btn_tag"]))
         self.status_display.configure(text_color=ACCENT_CYAN)
         self.telemetry_var.set("SPEED: ACQUIRING  |  ETA: --:--")
 
@@ -1490,11 +1678,11 @@ class MediaRipperApp(ctk.CTk):
 
                     self.after(0, self._update_progress, percent_val, total_size, speed, eta)
                 elif "[ExtractAudio]" in cleaned:
-                    self.after(0, self._update_status, "CONVERTING // ENCODING AUDIO...")
+                    self.after(0, self._update_status, self.t("status_converting"))
                 elif "[Merger]" in cleaned:
-                    self.after(0, self._update_status, "MERGING // COMBINING AUDIO + VIDEO...")
+                    self.after(0, self._update_status, self.t("status_merging"))
                 elif "[info]" in cleaned:
-                    self.after(0, self._update_status, "PARSING // STREAM METADATA OK")
+                    self.after(0, self._update_status, self.t("status_parsing"))
 
             self.process.wait()
             rc = self.process.returncode
@@ -1506,7 +1694,7 @@ class MediaRipperApp(ctk.CTk):
     def _update_progress(self, percent, total_size, speed, eta):
         frac = min(max(percent / 100.0, 0.0), 1.0)
         self.progress_bar.set(frac)
-        self.status_var.set(f"DOWNLOADING // {percent:.1f}%")
+        self.status_var.set(self.t("status_downloading", percent=percent))
         self.telemetry_var.set(f"SPEED: {speed}  |  ETA: {eta}  |  SIZE: {total_size}")
 
     def _update_status(self, text):
@@ -1526,9 +1714,9 @@ class MediaRipperApp(ctk.CTk):
 
         if returncode == 0:
             self.progress_bar.set(1.0)
-            self.status_var.set(f"COMPLETE // {lvl_cfg['btn_tag']} SAVED TO DOWNLOADS")
+            self.status_var.set(self.t("status_complete", tag=lvl_cfg["btn_tag"]))
             self.status_display.configure(text_color=ACCENT_GREEN)
-            self.telemetry_var.set("STATUS: 100% OK  |  TASK FINISHED")
+            self.telemetry_var.set(self.t("telemetry_finished"))
 
             # Catalog into persistent history
             title = self._last_download_title if self._last_download_title else url

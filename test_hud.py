@@ -70,6 +70,30 @@ def run_checks():
     assert isinstance(items, list)
     print(f"  [PASS] History ledger loaded ({len(items)} entries).")
 
+    # 6. Bilingual Language Switching [ EN / TH ]
+    # Force EN first to verify known strings
+    app.current_lang = "en"
+    app.apply_language()
+    assert app.btn_lang.cget("text") == "TH", "Failed: In EN mode, toggle button should offer 'TH'"
+    assert app.url_header_lbl.cget("text") == "// TARGET STREAM URL"
+    assert app.paste_btn.cget("text") == "[PASTE]"
+    assert app.fmt_lbl.cget("text") == "FORMAT:"
+
+    # Toggle to TH
+    app.toggle_language()
+    assert app.current_lang == "th"
+    assert app.btn_lang.cget("text") == "EN", "Failed: In TH mode, toggle button should offer 'EN'"
+    assert app.url_header_lbl.cget("text") == "// ลิงก์ที่ต้องการดาวน์โหลด"
+    assert app.paste_btn.cget("text") == "[วางลิงก์]"
+    assert app.fmt_lbl.cget("text") == "รูปแบบ:"
+
+    # Toggle back to EN
+    app.toggle_language()
+    assert app.current_lang == "en"
+    assert app.url_header_lbl.cget("text") == "// TARGET STREAM URL"
+    assert app.paste_btn.cget("text") == "[PASTE]"
+    print("  [PASS] Dynamic bilingual language switcher (EN <-> TH) verified.")
+
     # Cleanup (clear test clipboard and destroy window)
     app.clipboard_clear()
     app.destroy()
