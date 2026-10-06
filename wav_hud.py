@@ -35,9 +35,39 @@ else:
 BASE_DIR = APP_DIR
 LOGO_PNG = os.path.join(BUNDLE_DIR, "logo_rounded.png")
 LOGO_ICO = os.path.join(BUNDLE_DIR, "logo.ico")
-HISTORY_FILE = os.path.join(APP_DIR, "history.json")
-CURRENT_VERSION = "v2.4.8"
+CURRENT_VERSION = "v2.4.9"
 GITHUB_REPO = "Xspexdo/Wav-Ripper-"
+
+LOCAL_DATA_DIR = os.path.join(
+    os.environ.get("LOCALAPPDATA", os.path.expanduser("~")),
+    "WAV-Ripper",
+)
+
+
+def is_exposed_dir(path):
+    """Detect if path is an exposed/clean desktop/downloads/root directory."""
+    if not path:
+        return False
+    try:
+        p = os.path.normcase(os.path.abspath(path))
+        user_home = os.path.expanduser("~")
+        exposed = [
+            os.path.normcase(os.path.abspath(os.path.join(user_home, "Desktop"))),
+            os.path.normcase(os.path.abspath(os.path.join(user_home, "Downloads"))),
+            os.path.normcase(os.path.abspath(os.path.join(user_home, "OneDrive", "Desktop"))),
+            os.path.normcase(os.path.abspath(os.path.join(user_home, "OneDrive", "Downloads"))),
+        ]
+        if len(p.rstrip("\\/")) <= 2:
+            return True
+        return p in exposed
+    except Exception:
+        return False
+
+
+if is_exposed_dir(APP_DIR):
+    HISTORY_FILE = os.path.join(LOCAL_DATA_DIR, "history.json")
+else:
+    HISTORY_FILE = os.path.join(APP_DIR, "history.json")
 
 # Safe stream redirection for windowless pythonw execution
 if sys.stdout is None:
@@ -49,7 +79,12 @@ if sys.stderr is None:
 def global_exception_handler(exc_type, exc_value, exc_traceback):
     if issubclass(exc_type, KeyboardInterrupt):
         return
-    log_path = os.path.join(BASE_DIR, "crash.log")
+    log_dir = LOCAL_DATA_DIR if is_exposed_dir(APP_DIR) else BASE_DIR
+    try:
+        os.makedirs(log_dir, exist_ok=True)
+    except Exception:
+        pass
+    log_path = os.path.join(log_dir, "crash.log")
     err_text = "".join(traceback.format_exception(exc_type, exc_value, exc_traceback))
     try:
         with open(log_path, "w", encoding="utf-8") as f:
@@ -351,7 +386,15 @@ TRANSLATIONS = {
 
 
 def load_history():
-    """Load extraction history from local JSON file."""
+    """Load extraction history from local JSON file with auto-migration."""
+    legacy_file = os.path.join(APP_DIR, "history.json")
+    if is_exposed_dir(APP_DIR) and not os.path.isfile(HISTORY_FILE) and os.path.isfile(legacy_file):
+        try:
+            os.makedirs(LOCAL_DATA_DIR, exist_ok=True)
+            shutil.copy2(legacy_file, HISTORY_FILE)
+        except Exception:
+            pass
+
     if not os.path.isfile(HISTORY_FILE):
         return []
     try:
@@ -365,6 +408,7 @@ def load_history():
 def save_history(items):
     """Save extraction history to local JSON file."""
     try:
+        os.makedirs(os.path.dirname(HISTORY_FILE), exist_ok=True)
         with open(HISTORY_FILE, "w", encoding="utf-8") as f:
             json.dump(items, f, indent=2, ensure_ascii=False)
     except Exception:
@@ -373,22 +417,41 @@ def save_history(items):
 
 def get_engine_dir():
     """Returns directory where yt-dlp and ffmpeg are placed."""
-    candidates = [
-        os.path.join(APP_DIR, "bin"),
-        APP_DIR,
-        os.path.join(os.environ.get("LOCALAPPDATA", os.path.expanduser("~")), "WAV-Ripper", "bin"),
-    ]
-    for target in candidates:
+    local_bin = os.path.join(LOCAL_DATA_DIR, "bin")
+
+    # If running from Desktop, Downloads, or Drive root, NEVER create bin in APP_DIR
+    if is_exposed_dir(APP_DIR):
         try:
-            os.makedirs(target, exist_ok=True)
-            test_file = os.path.join(target, ".perm_test")
-            with open(test_file, "w") as f:
-                f.write("ok")
-            os.remove(test_file)
-            return target
+            os.makedirs(local_bin, exist_ok=True)
+            # Auto-migrate existing engines from Desktop/bin if present
+            desktop_bin = os.path.join(APP_DIR, "bin")
+            if os.path.isdir(desktop_bin):
+                for fname in ["yt-dlp.exe", "ffmpeg.exe", "ffprobe.exe"]:
+                    src = os.path.join(desktop_bin, fname)
+                    dst = os.path.join(local_bin, fname)
+                    if os.path.isfile(src) and not os.path.isfile(dst):
+                        try:
+                            shutil.copy2(src, dst)
+                        except Exception:
+                            pass
+            return local_bin
         except Exception:
-            continue
-    return APP_DIR
+            pass
+
+    # If already has a local bin folder (like in Portable package), prefer it
+    app_bin = os.path.join(APP_DIR, "bin")
+    if os.path.isdir(app_bin):
+        return app_bin
+
+    if not is_exposed_dir(APP_DIR):
+        try:
+            os.makedirs(app_bin, exist_ok=True)
+            return app_bin
+        except Exception:
+            pass
+
+    os.makedirs(local_bin, exist_ok=True)
+    return local_bin
 
 
 def find_yt_dlp():
@@ -398,8 +461,10 @@ def find_yt_dlp():
         return path
 
     engine_dir = get_engine_dir()
+    local_bin = os.path.join(LOCAL_DATA_DIR, "bin")
     for cand in [
         os.path.join(engine_dir, "yt-dlp.exe"),
+        os.path.join(local_bin, "yt-dlp.exe"),
         os.path.join(APP_DIR, "bin", "yt-dlp.exe"),
         os.path.join(APP_DIR, "yt-dlp.exe"),
         os.path.join(BASE_DIR, "yt-dlp.exe"),
@@ -427,7 +492,8 @@ def find_ffmpeg_dir():
         return os.path.dirname(path)
 
     engine_dir = get_engine_dir()
-    for base in [engine_dir, os.path.join(APP_DIR, "bin"), APP_DIR, BASE_DIR]:
+    local_bin = os.path.join(LOCAL_DATA_DIR, "bin")
+    for base in [engine_dir, local_bin, os.path.join(APP_DIR, "bin"), APP_DIR, BASE_DIR]:
         for sub in [("ffmpeg", "bin"), ("bin",), ()]:
             candidate = os.path.join(base, *sub)
             if os.path.isfile(os.path.join(candidate, "ffmpeg.exe")):

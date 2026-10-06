@@ -17,6 +17,8 @@ from wav_hud import (
     FORMAT_CONFIG,
     load_history,
     save_history,
+    is_exposed_dir,
+    get_engine_dir,
 )
 
 
@@ -93,6 +95,14 @@ def run_checks():
     assert app.url_header_lbl.cget("text") == "// TARGET STREAM URL"
     assert app.paste_btn.cget("text") == "[PASTE]"
     print("  [PASS] Dynamic bilingual language switcher (EN <-> TH) verified.")
+
+    # 7. Exposed directory detection (Desktop / Downloads)
+    desktop_dir = os.path.expanduser("~/Desktop")
+    downloads_dir = os.path.expanduser("~/Downloads")
+    assert is_exposed_dir(desktop_dir), "Desktop must be detected as exposed directory"
+    assert is_exposed_dir(downloads_dir), "Downloads must be detected as exposed directory"
+    assert not is_exposed_dir(r"C:\Tools\CustomApp"), "Dedicated folder must not be detected as exposed"
+    print("  [PASS] Exposed directory isolation (Desktop/Downloads -> %LOCALAPPDATA%) verified.")
 
     # Cleanup (clear test clipboard and destroy window)
     app.clipboard_clear()
