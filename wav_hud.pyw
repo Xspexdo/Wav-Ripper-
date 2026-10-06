@@ -272,6 +272,11 @@ TRANSLATIONS = {
         "status_error_empty": "ERROR // EMPTY TARGET URL",
         "confirm_purge_title": "CONFIRM PURGE",
         "confirm_purge_msg": "Purge all extraction history records?",
+        "status_engine_checking": "INITIALIZING // VERIFYING CORE ENGINES...",
+        "status_engine_dl_ytdlp": "INITIALIZING // AUTO-DOWNLOADING YT-DLP ENGINE...",
+        "status_engine_dl_ffmpeg": "INITIALIZING // AUTO-DOWNLOADING FFMPEG CODECS...",
+        "status_engine_ready": "ENGINES READY // STARTING EXTRACTION...",
+        "btn_engine_setup": "[ CONFIGURING ENGINES... PLEASE WAIT ]",
     },
     "th": {
         "nav_ripper": "// หน้าดาวน์โหลด",
@@ -312,6 +317,11 @@ TRANSLATIONS = {
         "status_error_empty": "ข้อผิดพลาด // กรุณาใส่ลิงก์ก่อนเริ่ม",
         "confirm_purge_title": "ยืนยันการล้างประวัติ",
         "confirm_purge_msg": "ต้องการล้างประวัติการดาวน์โหลดทั้งหมดใช่หรือไม่?",
+        "status_engine_checking": "กำลังเริ่มต้น // กำลังตรวจสอบระบบดาวน์โหลด...",
+        "status_engine_dl_ytdlp": "กำลังติดตั้ง // ดาวน์โหลด ENGINE YT-DLP อัตโนมัติ...",
+        "status_engine_dl_ffmpeg": "กำลังติดตั้ง // ดาวน์โหลด FFMPEG CODECS อัตโนมัติ...",
+        "status_engine_ready": "ระบบพร้อมใช้งาน // เริ่มการดึงสตรีม...",
+        "btn_engine_setup": "[ กำลังติดตั้งระบบดาวน์โหลด... กรุณารอสักครู่ ]",
     },
 }
 
@@ -337,16 +347,41 @@ def save_history(items):
         pass
 
 
+def get_engine_dir():
+    """Returns directory where yt-dlp and ffmpeg are placed."""
+    candidates = [
+        os.path.join(APP_DIR, "bin"),
+        APP_DIR,
+        os.path.join(os.environ.get("LOCALAPPDATA", os.path.expanduser("~")), "WAV-Ripper", "bin"),
+    ]
+    for target in candidates:
+        try:
+            os.makedirs(target, exist_ok=True)
+            test_file = os.path.join(target, ".perm_test")
+            with open(test_file, "w") as f:
+                f.write("ok")
+            os.remove(test_file)
+            return target
+        except Exception:
+            continue
+    return APP_DIR
+
+
 def find_yt_dlp():
-    """Locate yt-dlp binary on PATH, local directory, or WinGet packages directory."""
+    """Locate yt-dlp binary on PATH, local app directory, or WinGet packages directory."""
     path = shutil.which("yt-dlp")
     if path:
         return path
 
-    # Local bundled binary
-    local_bin = os.path.join(BASE_DIR, "yt-dlp.exe")
-    if os.path.isfile(local_bin):
-        return local_bin
+    engine_dir = get_engine_dir()
+    for cand in [
+        os.path.join(engine_dir, "yt-dlp.exe"),
+        os.path.join(APP_DIR, "bin", "yt-dlp.exe"),
+        os.path.join(APP_DIR, "yt-dlp.exe"),
+        os.path.join(BASE_DIR, "yt-dlp.exe"),
+    ]:
+        if os.path.isfile(cand):
+            return cand
 
     local_appdata = os.environ.get("LOCALAPPDATA", "")
     if local_appdata:
@@ -358,20 +393,21 @@ def find_yt_dlp():
         if matches:
             return matches[0]
 
-    return "yt-dlp"
+    return None
 
 
 def find_ffmpeg_dir():
-    """Locate ffmpeg binary directory on PATH, local directory, or WinGet packages directory."""
+    """Locate ffmpeg binary directory on PATH, local app directory, or WinGet packages directory."""
     path = shutil.which("ffmpeg")
     if path:
         return os.path.dirname(path)
 
-    # Local bundled ffmpeg
-    for sub in [("ffmpeg", "bin"), ("bin",), ()]:
-        candidate = os.path.join(BASE_DIR, *sub)
-        if os.path.isfile(os.path.join(candidate, "ffmpeg.exe")):
-            return candidate
+    engine_dir = get_engine_dir()
+    for base in [engine_dir, os.path.join(APP_DIR, "bin"), APP_DIR, BASE_DIR]:
+        for sub in [("ffmpeg", "bin"), ("bin",), ()]:
+            candidate = os.path.join(base, *sub)
+            if os.path.isfile(os.path.join(candidate, "ffmpeg.exe")):
+                return candidate
 
     local_appdata = os.environ.get("LOCALAPPDATA", "")
     if local_appdata:
@@ -385,6 +421,24 @@ def find_ffmpeg_dir():
                 return match
 
     return None
+
+
+def download_file_with_progress(url, dest_path, progress_callback=None):
+    import urllib.request
+    req = urllib.request.Request(url, headers={"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64)"})
+    with urllib.request.urlopen(req, timeout=45) as resp:
+        total = int(resp.headers.get("content-length", 0))
+        downloaded = 0
+        chunk_size = 64 * 1024
+        with open(dest_path, "wb") as f:
+            while True:
+                chunk = resp.read(chunk_size)
+                if not chunk:
+                    break
+                f.write(chunk)
+                downloaded += len(chunk)
+                if progress_callback and total > 0:
+                    progress_callback(downloaded, total)
 
 
 class MediaRipperApp(ctk.CTk):
@@ -1579,6 +1633,132 @@ class MediaRipperApp(ctk.CTk):
             self.status_display.configure(text_color=ACCENT_RED)
             return
 
+        # Ensure engines are ready
+        self.yt_dlp_bin = find_yt_dlp()
+        self.ffmpeg_dir = find_ffmpeg_dir()
+
+        if not self.yt_dlp_bin or not self.ffmpeg_dir:
+            self._setup_missing_engines_and_run(url)
+            return
+
+        self._execute_download(url)
+
+    def _setup_missing_engines_and_run(self, url):
+        self.is_downloading = True
+        self.execute_btn.configure(
+            state="disabled",
+            text=self.t("btn_engine_setup"),
+            fg_color="#181a24",
+            text_color=TEXT_MUTED,
+        )
+        self.abort_btn.configure(state="disabled")
+        self.progress_bar.configure(progress_color=ACCENT_CYAN)
+        self.progress_bar.set(0.0)
+
+        threading.Thread(
+            target=self._engine_installer_thread,
+            args=(url,),
+            daemon=True,
+        ).start()
+
+    def _engine_installer_thread(self, target_url):
+        engine_dir = get_engine_dir()
+        os.makedirs(engine_dir, exist_ok=True)
+
+        try:
+            # 1. Download yt-dlp if missing
+            if not self.yt_dlp_bin:
+                self.after(0, self.status_var.set, self.t("status_engine_dl_ytdlp"))
+                dest_ytdlp = os.path.join(engine_dir, "yt-dlp.exe")
+
+                def _ytdlp_prog(dl, total):
+                    pct = dl / total
+                    dl_mb = dl / (1024 * 1024)
+                    tot_mb = total / (1024 * 1024)
+                    self.after(0, self._update_engine_progress, pct, dl_mb, tot_mb)
+
+                download_file_with_progress(
+                    "https://github.com/yt-dlp/yt-dlp/releases/latest/download/yt-dlp.exe",
+                    dest_ytdlp,
+                    _ytdlp_prog,
+                )
+                self.yt_dlp_bin = dest_ytdlp
+
+            # 2. Setup ffmpeg if missing
+            if not self.ffmpeg_dir:
+                # Try winget silently first if available
+                if shutil.which("winget"):
+                    self.after(0, self.status_var.set, self.t("status_engine_checking"))
+                    try:
+                        subprocess.run(
+                            ["winget", "install", "yt-dlp.FFmpeg", "--accept-source-agreements", "--accept-package-agreements", "--silent"],
+                            creationflags=subprocess.CREATE_NO_WINDOW if sys.platform == "win32" else 0,
+                            timeout=60,
+                        )
+                        self.ffmpeg_dir = find_ffmpeg_dir()
+                    except Exception:
+                        pass
+
+                # If still not found, download portable ffmpeg zip
+                if not self.ffmpeg_dir:
+                    self.after(0, self.status_var.set, self.t("status_engine_dl_ffmpeg"))
+                    zip_path = os.path.join(engine_dir, "ffmpeg.zip")
+
+                    def _ff_prog(dl, total):
+                        pct = dl / total
+                        dl_mb = dl / (1024 * 1024)
+                        tot_mb = total / (1024 * 1024)
+                        self.after(0, self._update_engine_progress, pct, dl_mb, tot_mb)
+
+                    download_file_with_progress(
+                        "https://github.com/ffbinaries/ffbinaries-prebuilt/releases/download/v6.1/ffmpeg-6.1-win-64.zip",
+                        zip_path,
+                        _ff_prog,
+                    )
+
+                    import zipfile
+                    with zipfile.ZipFile(zip_path, "r") as z:
+                        for item in z.namelist():
+                            if item.lower().endswith("ffmpeg.exe"):
+                                with z.open(item) as src, open(os.path.join(engine_dir, "ffmpeg.exe"), "wb") as dst:
+                                    shutil.copyfileobj(src, dst)
+                                break
+                    try:
+                        os.remove(zip_path)
+                    except Exception:
+                        pass
+
+                    self.ffmpeg_dir = engine_dir
+
+            self.after(0, self.status_var.set, self.t("status_engine_ready"))
+            self.after(500, self._on_engines_ready, target_url)
+
+        except Exception as e:
+            self.after(0, self._on_engine_setup_failed, str(e))
+
+    def _update_engine_progress(self, percent, dl_mb, tot_mb):
+        self.progress_bar.set(percent)
+        self.telemetry_var.set(f"ENGINE SETUP: {percent*100:.0f}%  |  {dl_mb:.1f} / {tot_mb:.1f} MB")
+
+    def _on_engines_ready(self, url):
+        self.is_downloading = False
+        self._execute_download(url)
+
+    def _on_engine_setup_failed(self, error_msg):
+        self.is_downloading = False
+        self._update_quality_display()
+        self.execute_btn.configure(
+            state="normal",
+            fg_color=ACCENT_CYAN,
+            text_color="#060709",
+        )
+        self.abort_btn.configure(state="disabled")
+        short_err = error_msg if len(error_msg) <= 45 else error_msg[:42] + "..."
+        self.status_var.set(f"ENGINE ERROR // {short_err.upper()}")
+        self.status_display.configure(text_color=ACCENT_RED)
+        self.telemetry_var.set("CHECK INTERNET CONNECTION & RETRY")
+
+    def _execute_download(self, url):
         target_dir = os.path.normpath(os.path.expanduser(self.download_dir_var.get()))
         os.makedirs(target_dir, exist_ok=True)
 
@@ -1740,7 +1920,8 @@ class MediaRipperApp(ctk.CTk):
             text_color="#060709",
         )
         self.abort_btn.configure(state="disabled")
-        self.status_var.set("ERROR // PROCESS EXECUTION FAILED")
+        short_err = error_msg if len(error_msg) <= 45 else error_msg[:42] + "..."
+        self.status_var.set(f"ERROR // {short_err.upper()}")
         self.status_display.configure(text_color=ACCENT_RED)
 
     def abort_process(self):
