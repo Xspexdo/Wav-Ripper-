@@ -36,6 +36,8 @@ BASE_DIR = APP_DIR
 LOGO_PNG = os.path.join(BUNDLE_DIR, "logo_rounded.png")
 LOGO_ICO = os.path.join(BUNDLE_DIR, "logo.ico")
 HISTORY_FILE = os.path.join(APP_DIR, "history.json")
+CURRENT_VERSION = "v2.4.3"
+GITHUB_REPO = "Xspexdo/Wav-Ripper-"
 
 # Safe stream redirection for windowless pythonw execution
 if sys.stdout is None:
@@ -277,6 +279,16 @@ TRANSLATIONS = {
         "status_engine_dl_ffmpeg": "INITIALIZING // AUTO-DOWNLOADING FFMPEG CODECS...",
         "status_engine_ready": "ENGINES READY // STARTING EXTRACTION...",
         "btn_engine_setup": "[ CONFIGURING ENGINES... PLEASE WAIT ]",
+        "btn_update": "UPDATE",
+        "update_checking": "CHECKING FOR UPDATES...",
+        "update_latest": "WAV Ripper is up to date ({ver})",
+        "update_found_title": "NEW VERSION AVAILABLE",
+        "update_found_msg": "New version {tag} is available on GitHub!\n\nWould you like to update now?",
+        "update_git_prompt": "Git repository detected.\n\nWould you like to pull the latest changes via 'git pull origin main'?",
+        "update_git_success": "Repository updated successfully via Git!\n\nPlease restart the application to apply changes.",
+        "update_git_latest": "Git repository is already up to date.",
+        "update_downloading": "DOWNLOADING UPDATE {tag}...",
+        "update_failed": "Failed to check or apply update: {err}",
     },
     "th": {
         "nav_ripper": "// หน้าดาวน์โหลด",
@@ -322,6 +334,16 @@ TRANSLATIONS = {
         "status_engine_dl_ffmpeg": "กำลังติดตั้ง // ดาวน์โหลด FFMPEG CODECS อัตโนมัติ...",
         "status_engine_ready": "ระบบพร้อมใช้งาน // เริ่มการดึงสตรีม...",
         "btn_engine_setup": "[ กำลังติดตั้งระบบดาวน์โหลด... กรุณารอสักครู่ ]",
+        "btn_update": "อัปเดต",
+        "update_checking": "กำลังตรวจหาเวอร์ชันใหม่...",
+        "update_latest": "WAV Ripper เป็นเวอร์ชันล่าสุดแล้ว ({ver})",
+        "update_found_title": "พบเวอร์ชันใหม่",
+        "update_found_msg": "พบเวอร์ชันใหม่ {tag} บน GitHub!\n\nต้องการอัปเดตเป็นเวอร์ชันใหม่ทันทีหรือไม่?",
+        "update_git_prompt": "ตรวจพบ Git Repository ในโฟลเดอร์\n\nต้องการดึงเวอร์ชันล่าสุดด้วยคำสั่ง 'git pull' เลยหรือไม่?",
+        "update_git_success": "อัปเดตโค้ดผ่าน Git สำเร็จแล้ว!\n\nกรุณารีสตาร์ทโปรแกรมเพื่อเริ่มใช้งาน",
+        "update_git_latest": "โค้ดใน Git เป็นเวอร์ชันล่าสุดแล้ว",
+        "update_downloading": "กำลังดาวน์โหลดอัปเดต {tag}...",
+        "update_failed": "ไม่สามารถอัปเดตได้: {err}",
     },
 }
 
@@ -546,6 +568,10 @@ class MediaRipperApp(ctk.CTk):
 
         # Frameless Window & DPI Centering Setup
         self.setup_frameless(690, 536)
+
+        # Background update check (non-blocking)
+        self.update_available = False
+        self.after(2000, lambda: self.check_for_updates(manual=False))
 
     def setup_frameless(self, width, height):
         self.update_idletasks()
@@ -820,6 +846,10 @@ class MediaRipperApp(ctk.CTk):
         # Update execute button text
         self._update_quality_display()
 
+        # Titlebar Update Button
+        if hasattr(self, "btn_update") and not getattr(self, "update_available", False):
+            self.btn_update.configure(text=self.t("btn_update"))
+
         # Re-render history if currently displayed
         if self.current_tab == "history":
             self.render_history_items()
@@ -872,7 +902,7 @@ class MediaRipperApp(ctk.CTk):
 
         tag_badge = ctk.CTkLabel(
             brand_frame,
-            text="HUD v2.4",
+            text=f"HUD {CURRENT_VERSION}",
             font=ctk.CTkFont(family="Consolas", size=10, weight="bold"),
             text_color=TEXT_CYAN,
             fg_color="#121824",
@@ -886,6 +916,23 @@ class MediaRipperApp(ctk.CTk):
         # Right window control buttons
         controls_frame = ctk.CTkFrame(self.titlebar_frame, fg_color="transparent")
         controls_frame.pack(side="right", padx=(0, 8), fill="y")
+
+        # Update / Git pull button
+        self.btn_update = ctk.CTkButton(
+            controls_frame,
+            text=self.t("btn_update"),
+            font=ctk.CTkFont(family="Consolas", size=9, weight="bold"),
+            fg_color="#141926",
+            hover_color="#1f283d",
+            border_color="#2b3754",
+            border_width=1,
+            text_color="#94a3b8",
+            width=54,
+            height=26,
+            corner_radius=6,
+            command=lambda: self.check_for_updates(manual=True),
+        )
+        self.btn_update.pack(side="left", padx=(0, 6), pady=8)
 
         # Language Switcher Toggle [ EN | TH ]
         self.btn_lang = ctk.CTkButton(
@@ -1804,7 +1851,162 @@ class MediaRipperApp(ctk.CTk):
         self.status_display.configure(text_color=ACCENT_RED)
         self.telemetry_var.set("CHECK INTERNET CONNECTION & RETRY")
 
-    def _execute_download(self, url):
+    # ---------------- Version Update Mechanisms ---------------- #
+
+    def check_for_updates(self, manual=False):
+        threading.Thread(
+            target=self._check_updates_worker,
+            args=(manual,),
+            daemon=True,
+        ).start()
+
+    def _check_updates_worker(self, manual):
+        # 1. If inside a Git clone, check and update via Git
+        git_dir = os.path.join(APP_DIR, ".git")
+        if os.path.isdir(git_dir) and shutil.which("git"):
+            try:
+                if manual:
+                    self.after(0, self.status_var.set, self.t("update_checking"))
+                subprocess.run(
+                    ["git", "fetch", "origin", "main"],
+                    cwd=APP_DIR,
+                    capture_output=True,
+                    text=True,
+                    creationflags=subprocess.CREATE_NO_WINDOW if sys.platform == "win32" else 0,
+                    timeout=15,
+                )
+                diff_res = subprocess.run(
+                    ["git", "rev-list", "HEAD..origin/main", "--count"],
+                    cwd=APP_DIR,
+                    capture_output=True,
+                    text=True,
+                    creationflags=subprocess.CREATE_NO_WINDOW if sys.platform == "win32" else 0,
+                    timeout=10,
+                )
+                behind_count = int(diff_res.stdout.strip()) if diff_res.stdout.strip().isdigit() else 0
+                if behind_count > 0:
+                    self.after(0, self._on_git_update_available, behind_count, manual)
+                    return
+                elif manual:
+                    self.after(0, mb.showinfo, "GIT UPDATE", self.t("update_git_latest"))
+                    self.after(0, self.status_var.set, self.t("status_ready"))
+                    return
+            except Exception as e:
+                if manual:
+                    self.after(0, mb.showerror, "GIT ERROR", self.t("update_failed", err=str(e)))
+                    return
+
+        # 2. Check GitHub Releases API
+        try:
+            if manual:
+                self.after(0, self.status_var.set, self.t("update_checking"))
+            import ssl, urllib.request
+            try:
+                ctx = ssl._create_unverified_context()
+            except Exception:
+                ctx = ssl.create_default_context()
+                ctx.check_hostname = False
+                ctx.verify_mode = ssl.CERT_NONE
+
+            api_url = f"https://api.github.com/repos/{GITHUB_REPO}/releases/latest"
+            req = urllib.request.Request(api_url, headers={"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64)"})
+            with urllib.request.urlopen(req, timeout=15, context=ctx) as resp:
+                data = json.loads(resp.read().decode("utf-8"))
+
+            latest_tag = data.get("tag_name", "").strip()
+
+            if latest_tag and latest_tag != CURRENT_VERSION:
+                self.after(0, self._on_release_update_available, latest_tag, data, manual)
+            elif manual:
+                self.after(0, mb.showinfo, "UPDATE", self.t("update_latest", ver=CURRENT_VERSION))
+                self.after(0, self.status_var.set, self.t("status_ready"))
+        except Exception as e:
+            if manual:
+                self.after(0, mb.showerror, "UPDATE ERROR", self.t("update_failed", err=str(e)))
+                self.after(0, self.status_var.set, self.t("status_ready"))
+
+    def _on_git_update_available(self, count, manual):
+        self.update_available = True
+        self.btn_update.configure(
+            text="GIT PULL",
+            fg_color="#18273d",
+            hover_color="#223b5c",
+            border_color=ACCENT_CYAN,
+            text_color=ACCENT_CYAN,
+        )
+        if manual:
+            if mb.askyesno(self.t("update_found_title"), self.t("update_git_prompt")):
+                self.status_var.set(self.t("update_downloading", tag="via Git"))
+                try:
+                    subprocess.run(
+                        ["git", "pull", "origin", "main"],
+                        cwd=APP_DIR,
+                        check=True,
+                        creationflags=subprocess.CREATE_NO_WINDOW if sys.platform == "win32" else 0,
+                    )
+                    mb.showinfo(self.t("update_found_title"), self.t("update_git_success"))
+                    self.status_var.set(self.t("status_ready"))
+                    self.btn_update.configure(text=self.t("btn_update"), text_color="#94a3b8", border_color="#2b3754")
+                except Exception as e:
+                    mb.showerror("GIT ERROR", self.t("update_failed", err=str(e)))
+
+    def _on_release_update_available(self, latest_tag, release_data, manual):
+        self.update_available = True
+        self.btn_update.configure(
+            text=f"NEW {latest_tag}",
+            fg_color="#18273d",
+            hover_color="#223b5c",
+            border_color=ACCENT_CYAN,
+            text_color=ACCENT_CYAN,
+        )
+        if manual:
+            if mb.askyesno(self.t("update_found_title"), self.t("update_found_msg", tag=latest_tag)):
+                # Find direct .exe asset if frozen
+                exe_asset_url = None
+                for asset in release_data.get("assets", []):
+                    if asset.get("name") == "WAV-Ripper.exe":
+                        exe_asset_url = asset.get("browser_download_url")
+                        break
+
+                if getattr(sys, "frozen", False) and exe_asset_url:
+                    threading.Thread(
+                        target=self._download_and_apply_exe_update,
+                        args=(exe_asset_url, latest_tag),
+                        daemon=True,
+                    ).start()
+                else:
+                    import webbrowser
+                    webbrowser.open_new_tab(release_data.get("html_url", f"https://github.com/{GITHUB_REPO}/releases"))
+
+    def _download_and_apply_exe_update(self, download_url, tag):
+        self.status_var.set(self.t("update_downloading", tag=tag))
+        self.progress_bar.set(0.0)
+
+        def _prog(dl, tot):
+            self.after(0, self.progress_bar.set, dl / tot)
+            self.after(0, self.telemetry_var.set, f"UPDATING: {dl/(1024*1024):.1f}/{tot/(1024*1024):.1f} MB")
+
+        temp_exe = os.path.join(APP_DIR, "WAV-Ripper.new.exe")
+        try:
+            download_file_with_progress(download_url, temp_exe, _prog)
+            curr_exe = sys.executable
+            bat_file = os.path.join(APP_DIR, "update_apply.bat")
+            bat_content = f"""@echo off
+timeout /t 1 /nobreak >nul
+move /y "{temp_exe}" "{curr_exe}" >nul
+start "" "{curr_exe}"
+del "%~f0"
+"""
+            with open(bat_file, "w", encoding="utf-8") as f:
+                f.write(bat_content)
+
+            subprocess.Popen(
+                ["cmd.exe", "/c", bat_file],
+                creationflags=subprocess.CREATE_NO_WINDOW if sys.platform == "win32" else 0,
+            )
+            os._exit(0)
+        except Exception as e:
+            self.after(0, mb.showerror, "UPDATE ERROR", self.t("update_failed", err=str(e)))
         target_dir = os.path.normpath(os.path.expanduser(self.download_dir_var.get()))
         os.makedirs(target_dir, exist_ok=True)
 
